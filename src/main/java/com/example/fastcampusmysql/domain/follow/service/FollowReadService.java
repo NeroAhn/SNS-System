@@ -13,7 +13,11 @@ public class FollowReadService {
 
     private final FollowRepository followRepository;
 
-    public List<Follow> getFollows(Long memberId) {
+    public List<Follow> getFollowings(Long memberId) {
         return followRepository.findByFromMemberId(memberId);
+    }
+
+    public List<Follow> getFollowers(Long memberId) {
+        return followRepository.findByToMemberId(memberId);
     }
 }

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 public class Follow {
@@ -16,8 +17,8 @@ public class Follow {
     @Builder
     public Follow(Long id, Long fromMemberId, Long toMemberId, LocalDateTime createdAt) {
         this.id = id;
-        this.fromMemberId = fromMemberId;
-        this.toMemberId = toMemberId;
-        this.createdAt = createdAt;
+        this.fromMemberId = Objects.requireNonNull(fromMemberId);
+        this.toMemberId = Objects.requireNonNull(toMemberId);
+        this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
     }
 }

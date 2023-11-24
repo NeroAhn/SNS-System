@@ -17,7 +17,7 @@ public class GetFollowMemberUsecase {
 
 
     public List<MemberDto> execute(Long memberId) {
-        var memberIds = followReadService.getFollows(memberId)
+        var memberIds = followReadService.getFollowings(memberId)
                 .stream()
                 .map(follow -> follow.getToMemberId())
                 .toList();

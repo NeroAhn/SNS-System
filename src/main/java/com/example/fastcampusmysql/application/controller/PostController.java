@@ -58,11 +58,19 @@ public class PostController {
         return getPostsUsecase.execute(memberId, cursorRequest);
     }
 
-    @GetMapping("/posts/members/{memberId}/timelines")
-    public CursorResponse<Post> getTimelineByCursor (
+    @GetMapping("/posts/members/{memberId}/timelines/pull")
+    public CursorResponse<Post> getTimelineByPullModel (
             @PathVariable Long memberId,
             CursorRequest cursorRequest
     ) {
         return getTimelinePostsUsecase.execute(memberId, cursorRequest);
+    }
+
+    @GetMapping("/posts/members/{memberId}/timelines/push")
+    public CursorResponse<Post> getTimelineByPushModel (
+            @PathVariable Long memberId,
+            CursorRequest cursorRequest
+    ) {
+        return getTimelinePostsUsecase.executeByTimeline(memberId, cursorRequest);
     }
 }
