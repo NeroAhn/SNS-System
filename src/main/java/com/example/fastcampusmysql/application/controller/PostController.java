@@ -4,12 +4,12 @@ import com.example.fastcampusmysql.application.usecase.CreatePostUsecase;
 import com.example.fastcampusmysql.application.usecase.GetDailyPostCountUsecase;
 import com.example.fastcampusmysql.application.usecase.GetPostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
-import com.example.fastcampusmysql.domain.post.dto.DailyPostRecordRequest;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
 import com.example.fastcampusmysql.domain.post.entity.Post;
+import com.example.fastcampusmysql.util.CursorRequest;
+import com.example.fastcampusmysql.util.CursorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -40,11 +40,19 @@ public class PostController {
         return getDailyPostCountUsecase.execute(memberId, startDate, endDate);
     }
 
-    @GetMapping("/posts/members/{memberId}")
-    public Page<Post> getPosts(
+    @GetMapping("/posts/members/{memberId}/by-offset")
+    public Page<Post> getPostsByOffset(
             @PathVariable Long memberId,
             Pageable pageable
     ) {
         return getPostsUsecase.execute(memberId, pageable);
+    }
+
+    @GetMapping("/posts/members/{memberId}/by-cursor")
+    public CursorResponse<Post> getPostsByCursor(
+            @PathVariable Long memberId,
+            CursorRequest cursorRequest
+    ) {
+        return getPostsUsecase.execute(memberId, cursorRequest);
     }
 }
