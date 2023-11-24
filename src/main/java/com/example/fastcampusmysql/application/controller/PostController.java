@@ -3,6 +3,7 @@ package com.example.fastcampusmysql.application.controller;
 import com.example.fastcampusmysql.application.usecase.CreatePostUsecase;
 import com.example.fastcampusmysql.application.usecase.GetDailyPostCountUsecase;
 import com.example.fastcampusmysql.application.usecase.GetPostsUsecase;
+import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
 import com.example.fastcampusmysql.domain.post.entity.Post;
@@ -24,6 +25,7 @@ public class PostController {
     private final CreatePostUsecase createPostUsecase;
     private final GetDailyPostCountUsecase getDailyPostCountUsecase;
     private final GetPostsUsecase getPostsUsecase;
+    private final GetTimelinePostsUsecase getTimelinePostsUsecase;
 
     @PostMapping("/posts")
     public Long create(@RequestBody PostCommand command) {
@@ -54,5 +56,13 @@ public class PostController {
             CursorRequest cursorRequest
     ) {
         return getPostsUsecase.execute(memberId, cursorRequest);
+    }
+
+    @GetMapping("/posts/members/{memberId}/timelines")
+    public CursorResponse<Post> getTimelineByCursor (
+            @PathVariable Long memberId,
+            CursorRequest cursorRequest
+    ) {
+        return getTimelinePostsUsecase.execute(memberId, cursorRequest);
     }
 }

@@ -28,18 +28,42 @@ public class PostReadService {
     }
 
     public CursorResponse<Post> getPostsByCursor(Long memberId, CursorRequest cursorRequest) {
-        List<Post> posts;
-        if (cursorRequest.hasKey()) {
-            posts = postRepository.findAllByLessThanIdAndMemberIdAndOrderByIdDesc(cursorRequest.key(), memberId, cursorRequest.size());
-        } else {
-            posts = postRepository.findAllByMemberIdAndOrderByIdDesc(memberId, cursorRequest.size());
-        }
+        List<Post> posts = findAllBy(memberId, cursorRequest);
 
+        Long nextKey = getNextKey(posts);
+
+        return new CursorResponse<>(cursorRequest.next(nextKey), posts);
+    }
+
+    public CursorResponse<Post> getPostsByCursor(List<Long> memberIds, CursorRequest cursorRequest) {
+        List<Post> posts = findAllBy(memberIds, cursorRequest);
+
+        Long nextKey = getNextKey(posts);
+
+        return new CursorResponse<>(cursorRequest.next(nextKey), posts);
+    }
+
+    private static Long getNextKey(List<Post> posts) {
         Long nextKey = posts.stream()
                 .mapToLong(Post::getId)
                 .min()
                 .orElse(CursorRequest.NONE_KEY);
+        return nextKey;
+    }
 
-        return new CursorResponse<>(cursorRequest.next(nextKey), posts);
+    private List<Post> findAllBy(Long memberId, CursorRequest cursorRequest) {
+        if (cursorRequest.hasKey()) {
+            return postRepository.findAllByLessThanIdAndMemberIdAndOrderByIdDesc(cursorRequest.key(), memberId, cursorRequest.size());
+        } else {
+            return postRepository.findAllByMemberIdAndOrderByIdDesc(memberId, cursorRequest.size());
+        }
+    }
+
+    private List<Post> findAllBy(List<Long> memberIds, CursorRequest cursorRequest) {
+        if (cursorRequest.hasKey()) {
+            return postRepository.findAllByLessThanIdAndMemberIdsAndOrderByIdDesc(cursorRequest.key(), memberIds, cursorRequest.size());
+        } else {
+            return postRepository.findAllByMemberIdsAndOrderByIdDesc(memberIds, cursorRequest.size());
+        }
     }
 }

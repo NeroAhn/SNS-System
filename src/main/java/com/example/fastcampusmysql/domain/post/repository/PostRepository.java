@@ -119,6 +119,22 @@ public class PostRepository {
         return namedParameterJdbcTemplate.query(sql, params, POST_ROW_MAPPER);
     }
 
+    public List<Post> findAllByMemberIdsAndOrderByIdDesc(List<Long> memberIds, Long size) {
+        if (memberIds.isEmpty()) return List.of();
+
+        var sql = String.format("SELECT * " +
+                "FROM %s " +
+                "WHERE memberId IN (:memberIds) " +
+                "ORDER BY id DESC " +
+                "LIMIT :size", TABLE);
+
+        var params = new MapSqlParameterSource()
+                .addValue("memberIds", memberIds)
+                .addValue("size", size);
+
+        return namedParameterJdbcTemplate.query(sql, params, POST_ROW_MAPPER);
+    }
+
     public List<Post> findAllByLessThanIdAndMemberIdAndOrderByIdDesc(Long id, Long memberId, Long size) {
         var sql = String.format("SELECT * " +
                 "FROM %s " +
@@ -128,6 +144,23 @@ public class PostRepository {
 
         var params = new MapSqlParameterSource()
                 .addValue("memberId", memberId)
+                .addValue("id", id)
+                .addValue("size", size);
+
+        return namedParameterJdbcTemplate.query(sql, params, POST_ROW_MAPPER);
+    }
+
+    public List<Post> findAllByLessThanIdAndMemberIdsAndOrderByIdDesc(Long id, List<Long> memberIds, Long size) {
+        if (memberIds.isEmpty()) return List.of();
+
+        var sql = String.format("SELECT * " +
+                "FROM %s " +
+                "WHERE memberId IN (:memberIds) AND id < :id " +
+                "ORDER BY id DESC " +
+                "LIMIT :size", TABLE);
+
+        var params = new MapSqlParameterSource()
+                .addValue("memberIds", memberIds)
                 .addValue("id", id)
                 .addValue("size", size);
 
