@@ -2,6 +2,7 @@ package com.example.fastcampusmysql.domain.member.repository;
 
 import com.example.fastcampusmysql.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -36,8 +37,9 @@ public class MemberRepository {
         var param = new MapSqlParameterSource()
                 .addValue("id", id);
 
-        var member = namedParameterJdbcTemplate.queryForObject(sql, param, rowMapper);
-        return Optional.ofNullable(member);
+        var members = namedParameterJdbcTemplate.query(sql, param, rowMapper);
+        Member nullableMember = DataAccessUtils.nullableSingleResult(members);
+        return Optional.ofNullable(nullableMember);
     }
 
     public List<Member> findAllByIdIn(List<Long> ids) {

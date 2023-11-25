@@ -7,6 +7,7 @@ import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
 import com.example.fastcampusmysql.domain.post.entity.Post;
+import com.example.fastcampusmysql.domain.post.service.PostWriteService;
 import com.example.fastcampusmysql.util.CursorRequest;
 import com.example.fastcampusmysql.util.CursorResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +27,21 @@ public class PostController {
     private final GetDailyPostCountUsecase getDailyPostCountUsecase;
     private final GetPostsUsecase getPostsUsecase;
     private final GetTimelinePostsUsecase getTimelinePostsUsecase;
+    private final PostWriteService postWriteService;
 
     @PostMapping("/posts")
     public Long create(@RequestBody PostCommand command) {
         return createPostUsecase.execute(command);
+    }
+
+    @PostMapping("/posts/{id}/like")
+    public void likePost(@PathVariable Long id) {
+        postWriteService.likePost(id);
+    }
+
+    @PostMapping("/posts/{id}/like/optimistic")
+    public void likePostByOptimisticLock(@PathVariable Long id) {
+        postWriteService.likePostByOptimisticLock(id);
     }
 
     @GetMapping("/posts/daily-count")

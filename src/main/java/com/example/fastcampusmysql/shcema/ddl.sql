@@ -61,3 +61,10 @@ create table Timeline
 
 create index Timeline_index_member_id
     on Timeline (memberId);
+
+alter table Post
+add column likeCount int;
+
+alter table Post
+add column version int default 0;
+

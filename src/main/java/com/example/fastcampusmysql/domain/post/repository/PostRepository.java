@@ -1,10 +1,11 @@
 package com.example.fastcampusmysql.domain.post.repository;
 
-import com.example.fastcampusmysql.util.PageHelper;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostRecordRequest;
 import com.example.fastcampusmysql.domain.post.entity.Post;
+import com.example.fastcampusmysql.util.PageHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
@@ -38,16 +40,18 @@ public class PostRepository {
             .id(rs.getLong("id"))
             .memberId(rs.getLong("memberId"))
             .contents(rs.getString("contents"))
+            .likeCount(rs.getLong("likeCount"))
             .createdDate(rs.getObject("createdDate", LocalDate.class))
             .createdAt(rs.getObject("createdAt", LocalDateTime.class))
+            .version(rs.getLong("version"))
             .build();
 
     public Post save(Post post) {
         if (post.getId() == null) {
             return insert(post);
+        } else {
+            return update(post);
         }
-
-        throw new UnsupportedOperationException("Post는 갱신을 지원하지 않습니다.");
     }
 
     private Post insert(Post post) {
@@ -190,5 +194,32 @@ public class PostRepository {
                 .addValue("ids", ids);
 
         return namedParameterJdbcTemplate.query(sql, params, POST_ROW_MAPPER);
+    }
+
+    public Optional<Post> findById(Long id, boolean requiredLock) {
+        var sql = String.format("SELECT * FROM %s WHERE id = :id", TABLE);
+        if (requiredLock) sql += " FOR UPDATE";
+        var params = new MapSqlParameterSource()
+                .addValue("id", id);
+        var nullablePost = namedParameterJdbcTemplate.queryForObject(sql, params, POST_ROW_MAPPER);
+        return Optional.ofNullable(nullablePost);
+    }
+
+    private Post update(Post post) {
+        var sql = String.format("UPDATE %s SET " +
+                "memberId = :memberId " +
+                ", contents = :contents " +
+                ", likeCount = :likeCount " +
+                ", createdDate = :createdDate " +
+                ", createdAt = :createdAt " +
+                ", version = :version + 1 " +
+                "WHERE id = :id " +
+                "AND version = :version", TABLE);
+        SqlParameterSource params = new BeanPropertySqlParameterSource(post);
+        var updatedCount = namedParameterJdbcTemplate.update(sql, params);
+        if (updatedCount == 0) {
+            throw new OptimisticLockingFailureException("Optimistic Locking Failure Exception 으로 인한 Post 업데이트 실패");
+        }
+        return post;
     }
 }
