@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.application.usecase;
 
+import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.service.PostReadService;
 import com.example.fastcampusmysql.util.CursorRequest;
@@ -19,7 +20,7 @@ public class GetPostsUsecase {
         return postReadService.getPostsByOffset(memberId, pageable);
     }
 
-    public CursorResponse<Post> execute(Long memberId, CursorRequest cursorRequest) {
+    public CursorResponse<PostDto> execute(Long memberId, CursorRequest cursorRequest) {
         return postReadService.getPostsByCursor(memberId, cursorRequest);
     }
 }

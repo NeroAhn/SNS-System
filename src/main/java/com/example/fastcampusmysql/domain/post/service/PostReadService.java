@@ -2,7 +2,9 @@ package com.example.fastcampusmysql.domain.post.service;
 
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostRecordRequest;
+import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
+import com.example.fastcampusmysql.domain.post.repository.PostLikeRepository;
 import com.example.fastcampusmysql.domain.post.repository.PostRepository;
 import com.example.fastcampusmysql.util.CursorRequest;
 import com.example.fastcampusmysql.util.CursorResponse;
@@ -18,6 +20,7 @@ import java.util.List;
 public class PostReadService {
 
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
 
     public List<DailyPostInfo> getDailyPostCount(DailyPostRecordRequest request) {
         return postRepository.groupByCreatedDate(request);
@@ -27,25 +30,25 @@ public class PostReadService {
         return postRepository.findAllByMemberIdOffset(memberId, pageable);
     }
 
-    public CursorResponse<Post> getPostsByCursor(Long memberId, CursorRequest cursorRequest) {
-        List<Post> posts = findAllBy(memberId, cursorRequest);
+    public CursorResponse<PostDto> getPostsByCursor(Long memberId, CursorRequest cursorRequest) {
+        List<PostDto> posts = findAllBy(memberId, cursorRequest).stream().map(this::toDto).toList();
 
         Long nextKey = getNextKey(posts);
 
         return new CursorResponse<>(cursorRequest.next(nextKey), posts);
     }
 
-    public CursorResponse<Post> getPostsByCursor(List<Long> memberIds, CursorRequest cursorRequest) {
-        List<Post> posts = findAllBy(memberIds, cursorRequest);
+    public CursorResponse<PostDto> getPostsByCursor(List<Long> memberIds, CursorRequest cursorRequest) {
+        List<PostDto> posts = findAllBy(memberIds, cursorRequest).stream().map(this::toDto).toList();
 
         Long nextKey = getNextKey(posts);
 
         return new CursorResponse<>(cursorRequest.next(nextKey), posts);
     }
 
-    private static Long getNextKey(List<Post> posts) {
+    private static Long getNextKey(List<PostDto> posts) {
         Long nextKey = posts.stream()
-                .mapToLong(Post::getId)
+                .mapToLong(PostDto::id)
                 .min()
                 .orElse(CursorRequest.NONE_KEY);
         return nextKey;
@@ -67,7 +70,16 @@ public class PostReadService {
         }
     }
 
-    public List<Post> getPosts(List<Long> ids) {
-        return postRepository.findAllByIdIn(ids);
+    public List<PostDto> getPosts(List<Long> ids) {
+        return postRepository.findAllByIdIn(ids).stream().map(this::toDto).toList();
+    }
+
+    public Post getPost(Long id) {
+        return postRepository.findById(id, false).orElseThrow();
+    }
+
+    private PostDto toDto(Post post) {
+        var likeCount = postLikeRepository.getLikeCount(post.getId());
+        return new PostDto(post.getId(), post.getContents(), post.getCreatedAt(), likeCount);
     }
 }

@@ -68,3 +68,11 @@ add column likeCount int;
 alter table Post
 add column version int default 0;
 
+create table PostLike
+(
+    id          int auto_increment
+        primary key,
+    memberId    int          not null,
+    postId    int not null,
+    createdAt   datetime     not null
+);

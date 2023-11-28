@@ -1,11 +1,9 @@
 package com.example.fastcampusmysql.application.controller;
 
-import com.example.fastcampusmysql.application.usecase.CreatePostUsecase;
-import com.example.fastcampusmysql.application.usecase.GetDailyPostCountUsecase;
-import com.example.fastcampusmysql.application.usecase.GetPostsUsecase;
-import com.example.fastcampusmysql.application.usecase.GetTimelinePostsUsecase;
+import com.example.fastcampusmysql.application.usecase.*;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostInfo;
 import com.example.fastcampusmysql.domain.post.dto.PostCommand;
+import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.service.PostWriteService;
 import com.example.fastcampusmysql.util.CursorRequest;
@@ -28,6 +26,7 @@ public class PostController {
     private final GetPostsUsecase getPostsUsecase;
     private final GetTimelinePostsUsecase getTimelinePostsUsecase;
     private final PostWriteService postWriteService;
+    private final CreatePostLikeUsecase createPostLikeUsecase;
 
     @PostMapping("/posts")
     public Long create(@RequestBody PostCommand command) {
@@ -42,6 +41,11 @@ public class PostController {
     @PostMapping("/posts/{id}/like/optimistic")
     public void likePostByOptimisticLock(@PathVariable Long id) {
         postWriteService.likePostByOptimisticLock(id);
+    }
+
+    @PostMapping("/posts/{id}/like/another-table")
+    public void likePostByAnotherTable(@PathVariable Long id, @RequestParam Long memberId) {
+        createPostLikeUsecase.execute(id, memberId);
     }
 
     @GetMapping("/posts/daily-count")
@@ -63,7 +67,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/members/{memberId}/by-cursor")
-    public CursorResponse<Post> getPostsByCursor(
+    public CursorResponse<PostDto> getPostsByCursor(
             @PathVariable Long memberId,
             CursorRequest cursorRequest
     ) {
@@ -71,7 +75,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/members/{memberId}/timelines/pull")
-    public CursorResponse<Post> getTimelineByPullModel (
+    public CursorResponse<PostDto> getTimelineByPullModel (
             @PathVariable Long memberId,
             CursorRequest cursorRequest
     ) {
@@ -79,7 +83,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/members/{memberId}/timelines/push")
-    public CursorResponse<Post> getTimelineByPushModel (
+    public CursorResponse<PostDto> getTimelineByPushModel (
             @PathVariable Long memberId,
             CursorRequest cursorRequest
     ) {
